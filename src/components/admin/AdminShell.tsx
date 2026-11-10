@@ -10,6 +10,7 @@ import {
   LayoutGrid,
   LogOut,
   Menu,
+  Palette,
   User,
   X,
 } from "lucide-react";
@@ -20,6 +21,7 @@ const NAV = [
   { href: "/admin/dipinti", label: "I miei Dipinti", icon: ImageIcon },
   { href: "/admin/eventi", label: "Eventi e Mostre", icon: CalendarDays },
   { href: "/admin/profilo", label: "Profilo e Bio", icon: User },
+  { href: "/admin/aspetto", label: "Aspetto del Sito", icon: Palette },
 ];
 
 const itemClass = "flex h-12 w-full items-center gap-3 rounded-xl px-3 text-[15px] text-muted hover:bg-bg";

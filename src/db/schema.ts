@@ -100,6 +100,15 @@ export const profileSettings = sqliteTable("profile_settings", {
   email: text("email"),
 });
 
+/** Single-row config (id = 1): public site look & feel */
+export const siteSettings = sqliteTable("site_settings", {
+  id: integer("id").primaryKey().default(1),
+  /** Wall preset id, see src/lib/theme.ts */
+  wallPreset: text("wall_preset").notNull().default("chiaroscuro"),
+  /** Custom main color as #rrggbb; null = default antique gold */
+  accentColor: text("accent_color"),
+});
+
 export type Painting = typeof paintings.$inferSelect;
 export type NewPainting = typeof paintings.$inferInsert;
 export type Event = typeof events.$inferSelect;

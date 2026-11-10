@@ -164,6 +164,7 @@ describe("mutating Server Actions reject unauthorized callers", () => {
     ["deleteEventAction", () => actions.deleteEventAction(1)],
     ["saveHomeSettingsAction", () => actions.saveHomeSettingsAction({ mode: "manual" })],
     ["saveProfileAction", () => actions.saveProfileAction({ bioDescription: "hack" })],
+    ["saveThemeAction", () => actions.saveThemeAction({ wall: "blu-notte", accent: "#ff0000" })],
   ];
 
   it.each(calls)("%s throws and changes nothing without a session", async (_name, call) => {

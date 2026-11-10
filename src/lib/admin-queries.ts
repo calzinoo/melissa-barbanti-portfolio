@@ -1,7 +1,15 @@
 import { asc, desc, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { events, homeSettings, paintings, paintingsToEvents, profileSettings } from "@/db/schema";
+import {
+  events,
+  homeSettings,
+  paintings,
+  paintingsToEvents,
+  profileSettings,
+  siteSettings,
+} from "@/db/schema";
 import { parseManualSlots } from "./home";
+import { DEFAULT_THEME, type SiteTheme } from "./theme";
 
 // Admin reads are intentionally uncached: the artist must always see fresh data.
 
@@ -74,6 +82,15 @@ export async function getEventForEdit(id: number) {
 
 export const getProfileAdmin = async () =>
   (await db.select().from(profileSettings).where(eq(profileSettings.id, 1)))[0] ?? null;
+
+export async function getThemeAdmin(): Promise<SiteTheme> {
+  try {
+    const [row] = await db.select().from(siteSettings).where(eq(siteSettings.id, 1));
+    return row ? { wall: row.wallPreset, accent: row.accentColor } : DEFAULT_THEME;
+  } catch {
+    return DEFAULT_THEME;
+  }
+}
 
 export async function getHomeAdminData() {
   const [[settings], pRows, eRows] = await Promise.all([

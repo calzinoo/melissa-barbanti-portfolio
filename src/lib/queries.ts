@@ -1,8 +1,9 @@
 import { and, desc, eq } from "drizzle-orm";
 import { cacheLife, cacheTag } from "next/cache";
 import { db } from "@/db";
-import { events, paintings, paintingsToEvents, profileSettings } from "@/db/schema";
+import { events, paintings, paintingsToEvents, profileSettings, siteSettings } from "@/db/schema";
 import { resolveHome, type HomeData } from "./home";
+import { DEFAULT_THEME, type SiteTheme } from "./theme";
 
 export type { HeroItem, HomeData } from "./home";
 
@@ -11,6 +12,19 @@ export async function getHomeData(): Promise<HomeData> {
   cacheTag("home", "paintings", "events");
   cacheLife("hours");
   return resolveHome(db);
+}
+
+export async function getSiteTheme(): Promise<SiteTheme> {
+  "use cache";
+  cacheTag("theme");
+  cacheLife("hours");
+  try {
+    const [row] = await db.select().from(siteSettings).where(eq(siteSettings.id, 1));
+    return row ? { wall: row.wallPreset, accent: row.accentColor } : DEFAULT_THEME;
+  } catch {
+    // Table not migrated yet: keep the site up with the default look.
+    return DEFAULT_THEME;
+  }
 }
 
 export type Contacts = { instagramUrl: string | null; email: string | null };

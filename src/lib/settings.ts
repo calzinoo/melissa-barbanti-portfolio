@@ -1,6 +1,14 @@
 import { inArray } from "drizzle-orm";
-import { events, homeSettings, paintings, profileSettings, type ItemType } from "@/db/schema";
+import {
+  events,
+  homeSettings,
+  paintings,
+  profileSettings,
+  siteSettings,
+  type ItemType,
+} from "@/db/schema";
 import type { DbOrTx } from "@/db/types";
+import { sanitizeTheme, type SiteTheme } from "./theme";
 import { MAX_MANUAL_SLOTS, parseManualSlots } from "./home";
 import type { Result } from "./validation";
 
@@ -67,6 +75,17 @@ export async function saveHomeSettings(
     .insert(homeSettings)
     .values({ id: 1, ...values })
     .onConflictDoUpdate({ target: homeSettings.id, set: values });
+  return { ok: true, data: null };
+}
+
+export async function saveSiteTheme(db: DbOrTx, raw: Partial<SiteTheme>): Promise<Result<null>> {
+  const v = sanitizeTheme(raw);
+  if (!v.ok) return v;
+  const values = { wallPreset: v.data.wall, accentColor: v.data.accent };
+  await db
+    .insert(siteSettings)
+    .values({ id: 1, ...values })
+    .onConflictDoUpdate({ target: siteSettings.id, set: values });
   return { ok: true, data: null };
 }
 

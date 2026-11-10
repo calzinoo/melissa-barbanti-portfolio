@@ -10,10 +10,17 @@ import {
   updateEvent,
   updatePainting,
 } from "@/lib/content";
-import { revalidateContent, revalidateHome, revalidateProfile } from "@/lib/revalidate";
+import {
+  revalidateContent,
+  revalidateHome,
+  revalidateProfile,
+  revalidateTheme,
+} from "@/lib/revalidate";
+import type { SiteTheme } from "@/lib/theme";
 import {
   saveHomeSettings,
   saveProfile,
+  saveSiteTheme,
   type HomeSettingsInput,
   type ProfileInput,
 } from "@/lib/settings";
@@ -92,6 +99,14 @@ export async function saveHomeSettingsAction(
   const res = await saveHomeSettings(db, raw);
   if (!res.ok) return res;
   revalidateHome();
+  return { ok: true };
+}
+
+export async function saveThemeAction(raw: Partial<SiteTheme>): Promise<ActionResult> {
+  await requireAdmin();
+  const res = await saveSiteTheme(db, raw);
+  if (!res.ok) return res;
+  revalidateTheme();
   return { ok: true };
 }
 

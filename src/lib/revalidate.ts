@@ -27,6 +27,12 @@ export function revalidateHome() {
   revalidatePath("/admin/home");
 }
 
+/** The theme wraps every public page, so revalidate the whole public layout. */
+export function revalidateTheme() {
+  updateTag("theme");
+  revalidatePath("/", "layout");
+}
+
 export function revalidateProfile() {
   updateTag("profile");
   revalidatePath("/profilo");

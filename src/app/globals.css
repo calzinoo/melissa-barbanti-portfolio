@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./wall-textures.css";
 
 /* Public site: "Chiaroscuro Gallery" dark theme (default) */
 :root {
@@ -35,4 +36,57 @@ body {
   background: var(--bg);
   color: var(--fg);
   font-family: var(--font-jakarta), system-ui, sans-serif;
+}
+
+/*
+ * Gallery wall: plaster grain + a soft spotlight falling from above.
+ * Intensities come from --wall-glow / --wall-grain (0 on the default dark theme).
+ */
+.wall {
+  background-color: var(--bg);
+  color: var(--fg);
+}
+
+.wall::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(
+      ellipse 90% 55% at 50% -5%,
+      rgb(255 255 255 / calc(var(--wall-glow, 0) * 0.55)),
+      transparent 75%
+    ),
+    linear-gradient(to bottom, transparent 60%, rgb(0 0 0 / calc(var(--wall-glow, 0) * 0.08)));
+}
+
+.wall::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: var(--wall-grain, 0);
+}
+
+/* The texture image itself comes from wall-textures.css, keyed by data-texture. */
+
+/* Admin preview: keep the effects inside the box instead of covering the viewport. */
+.wall-contained {
+  position: relative;
+  overflow: hidden;
+}
+.wall-contained::before,
+.wall-contained::after {
+  position: absolute;
+}
+.wall-contained > * {
+  position: relative;
+}
+
+/* Children are flex items, so z-index applies without changing their position (keeps the sticky navbar). */
+.wall > * {
+  z-index: 1;
 }
