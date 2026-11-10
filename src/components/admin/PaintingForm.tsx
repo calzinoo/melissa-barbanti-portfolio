@@ -114,7 +114,7 @@ export default function PaintingForm({ id, initial, events }: Props) {
             </select>
           </Field>
           <div className="sm:col-span-2">
-            <Field label="Descrizione" htmlFor="description" error={errors.description}>
+            <Field label="Descrizione (facoltativa)" htmlFor="description" error={errors.description}>
               <textarea id="description" rows={6} className={textareaCls} value={v.description} onChange={(e) => set("description", e.target.value)} />
             </Field>
           </div>

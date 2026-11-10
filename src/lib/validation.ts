@@ -57,7 +57,6 @@ export function validatePainting(raw: Record<string, unknown>): Result<PaintingI
 
   if (!title) errors.title = "Il titolo è obbligatorio";
   if (!mainImageUrl) errors.mainImageUrl = "L'immagine principale è obbligatoria";
-  if (!description) errors.description = "La descrizione è obbligatoria";
   if (!isIsoDate(date)) errors.date = "Inserisci una data valida (AAAA-MM-GG)";
   if (!AVAILABILITY.includes(availability)) errors.availability = "Disponibilità non valida";
 

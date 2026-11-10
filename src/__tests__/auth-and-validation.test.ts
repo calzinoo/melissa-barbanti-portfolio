@@ -237,10 +237,10 @@ describe("input validation", () => {
     }
   });
 
-  it("painting: requires title, image, description and a valid date", () => {
+  it("painting: requires title, image and a valid date (description optional)", () => {
     const res = validatePainting({});
     expect(res.ok).toBe(false);
-    if (!res.ok) expect(Object.keys(res.errors).sort()).toEqual(["date", "description", "mainImageUrl", "title"]);
+    if (!res.ok) expect(Object.keys(res.errors).sort()).toEqual(["date", "mainImageUrl", "title"]);
     expect(validatePainting(paintingInput({ title: "   " })).ok).toBe(false);
     expect(validatePainting(paintingInput({ date: "2024-02-30" })).ok).toBe(false);
   });

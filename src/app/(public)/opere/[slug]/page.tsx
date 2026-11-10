@@ -12,7 +12,7 @@ export async function generateMetadata({ params }: PageProps<"/opere/[slug]">): 
   const data = await getPaintingBySlug(slug);
   if (!data) return { title: "Opera non trovata — Melissa Barbanti" };
   const { title, description, mainImageUrl, slug: s } = data.painting;
-  const summary = description.replace(/\s+/g, " ").slice(0, 160);
+  const summary = description.replace(/\s+/g, " ").trim().slice(0, 160) || `${title} — opera di Melissa Barbanti.`;
   const images = [{ url: mainImageUrl, alt: title }];
   return {
     title: `${title} — Melissa Barbanti`,
@@ -79,16 +79,18 @@ async function PaintingContent({ params }: { params: PageProps<"/opere/[slug]">[
           </blockquote>
         )}
 
-        <div className="mt-10 space-y-5 text-lg leading-[1.85] text-fg/90">
-          {p.description
-            .replace(/\r\n/g, "\n")
-            .split("\n\n")
-            .map((para, i) => (
-              <p key={i} className="whitespace-pre-line">
-                {para}
-              </p>
-            ))}
-        </div>
+        {p.description.trim() && (
+          <div className="mt-10 space-y-5 text-lg leading-[1.85] text-fg/90">
+            {p.description
+              .replace(/\r\n/g, "\n")
+              .split("\n\n")
+              .map((para, i) => (
+                <p key={i} className="whitespace-pre-line">
+                  {para}
+                </p>
+              ))}
+          </div>
+        )}
 
         {events.length > 0 && (
           <section className="mt-14">
