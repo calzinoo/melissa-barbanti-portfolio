@@ -1,4 +1,4 @@
-import { inArray } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import {
   events,
   homeSettings,
@@ -10,6 +10,8 @@ import {
 import type { DbOrTx } from "@/db/types";
 import { sanitizeTheme, type SiteTheme } from "./theme";
 import { MAX_MANUAL_SLOTS, parseManualSlots } from "./home";
+import { removedUrls } from "./content";
+import { parseJsonArray } from "./format";
 import type { Result } from "./validation";
 
 export type HomeSettingsInput = {
@@ -89,7 +91,11 @@ export async function saveSiteTheme(db: DbOrTx, raw: Partial<SiteTheme>): Promis
   return { ok: true, data: null };
 }
 
-export async function saveProfile(db: DbOrTx, raw: Partial<ProfileInput>): Promise<Result<null>> {
+/** On success `data.orphanedUrls` lists images that were removed and can be deleted from storage. */
+export async function saveProfile(
+  db: DbOrTx,
+  raw: Partial<ProfileInput>,
+): Promise<Result<{ orphanedUrls: string[] }>> {
   const errors: Record<string, string> = {};
   const email = raw.email?.trim() || null;
   const instagramUrl = raw.instagramUrl?.trim() || null;
@@ -104,9 +110,16 @@ export async function saveProfile(db: DbOrTx, raw: Partial<ProfileInput>): Promi
     instagramUrl,
     email,
   };
+  const [old] = await db.select().from(profileSettings).where(eq(profileSettings.id, 1));
   await db
     .insert(profileSettings)
     .values({ id: 1, ...values })
     .onConflictDoUpdate({ target: profileSettings.id, set: values });
-  return { ok: true, data: null };
+  const orphanedUrls = old
+    ? removedUrls(
+        [old.avatarUrl, ...parseJsonArray<string>(old.profileImagesJson)],
+        [values.avatarUrl, ...(raw.profileImages ?? [])],
+      )
+    : [];
+  return { ok: true, data: { orphanedUrls } };
 }

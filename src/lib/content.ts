@@ -7,12 +7,24 @@ import {
   type ItemType,
 } from "@/db/schema";
 import type { Database, DbOrTx } from "@/db/types";
+import { parseJsonArray } from "./format";
 import { parseManualSlots } from "./home";
 import { uniqueSlug } from "./slug";
 import type { EventInput, PaintingInput } from "./validation";
 
 /** Slugs touched by a mutation, so callers can revalidate every affected route. */
-export type Affected = { paintingSlugs: string[]; eventSlugs: string[] };
+export type Affected = {
+  paintingSlugs: string[];
+  eventSlugs: string[];
+  /** Image URLs no longer referenced after the mutation; delete them from storage AFTER commit. */
+  orphanedUrls?: string[];
+};
+
+/** URLs present in `before` but absent from `after`. */
+export function removedUrls(before: Array<string | null | undefined>, after: Array<string | null | undefined>) {
+  const keep = new Set(after.filter(Boolean));
+  return [...new Set(before.filter((u): u is string => Boolean(u) && !keep.has(u)))];
+}
 
 const unique = <T,>(a: T[]) => [...new Set(a)];
 
@@ -103,7 +115,11 @@ export async function updatePainting(db: Database, id: number, input: PaintingIn
     const before = (await tx.select().from(paintingsToEvents).where(eq(paintingsToEvents.paintingId, id))).map((l) => l.eventId);
     const linked = await syncEventsForPainting(tx, id, input.eventIds);
     const eventSlugs = await slugsOf(tx, events, unique([...before, ...linked]));
-    return { painting: row, affected: { paintingSlugs: unique([old.slug, slug]), eventSlugs } as Affected };
+    const orphanedUrls = removedUrls(
+      [old.mainImageUrl, ...parseJsonArray<string>(old.detailImagesJson)],
+      [input.mainImageUrl, ...input.detailImages],
+    );
+    return { painting: row, affected: { paintingSlugs: unique([old.slug, slug]), eventSlugs, orphanedUrls } as Affected };
   });
 }
 
@@ -117,7 +133,8 @@ export async function deletePainting(db: Database, id: number) {
     await tx.delete(paintingsToEvents).where(eq(paintingsToEvents.paintingId, id));
     await tx.delete(paintings).where(eq(paintings.id, id));
     await cleanHomeSettings(tx, "painting", id);
-    return { paintingSlugs: [old.slug], eventSlugs } as Affected;
+    const orphanedUrls = removedUrls([old.mainImageUrl, ...parseJsonArray<string>(old.detailImagesJson)], []);
+    return { paintingSlugs: [old.slug], eventSlugs, orphanedUrls } as Affected;
   });
 }
 
@@ -140,7 +157,11 @@ export async function updateEvent(db: Database, id: number, input: EventInput) {
     const before = (await tx.select().from(paintingsToEvents).where(eq(paintingsToEvents.eventId, id))).map((l) => l.paintingId);
     const linked = await syncPaintingsForEvent(tx, id, input.paintingIds);
     const paintingSlugs = await slugsOf(tx, paintings, unique([...before, ...linked]));
-    return { event: row, affected: { eventSlugs: unique([old.slug, slug]), paintingSlugs } as Affected };
+    const orphanedUrls = removedUrls(
+      [old.coverImageUrl, ...parseJsonArray<string>(old.eventImagesJson)],
+      [input.coverImageUrl, ...input.eventImages],
+    );
+    return { event: row, affected: { eventSlugs: unique([old.slug, slug]), paintingSlugs, orphanedUrls } as Affected };
   });
 }
 
@@ -153,6 +174,7 @@ export async function deleteEvent(db: Database, id: number) {
     await tx.delete(paintingsToEvents).where(eq(paintingsToEvents.eventId, id));
     await tx.delete(events).where(eq(events.id, id));
     await cleanHomeSettings(tx, "event", id);
-    return { eventSlugs: [old.slug], paintingSlugs } as Affected;
+    const orphanedUrls = removedUrls([old.coverImageUrl, ...parseJsonArray<string>(old.eventImagesJson)], []);
+    return { eventSlugs: [old.slug], paintingSlugs, orphanedUrls } as Affected;
   });
 }

@@ -12,7 +12,15 @@ export async function generateMetadata({ params }: PageProps<"/eventi/[slug]">):
   const { slug } = await params;
   const data = await getEventBySlug(slug);
   if (!data) return { title: "Mostra non trovata — Melissa Barbanti" };
-  return { title: `${data.event.title} — Melissa Barbanti`, description: data.event.summary };
+  const { title, summary, coverImageUrl, eventImagesJson, slug: s } = data.event;
+  const image = coverImageUrl ?? parseJsonArray<string>(eventImagesJson)[0];
+  return {
+    title: `${title} — Melissa Barbanti`,
+    description: summary,
+    alternates: { canonical: `/eventi/${s}` },
+    openGraph: { title, description: summary, type: "article", url: `/eventi/${s}`, ...(image && { images: [{ url: image, alt: title }] }) },
+    twitter: { card: image ? "summary_large_image" : "summary", title, description: summary, ...(image && { images: [image] }) },
+  };
 }
 
 async function EventContent({ params }: { params: PageProps<"/eventi/[slug]">["params"] }) {

@@ -62,20 +62,23 @@ export function Field({
 
 export function FormActions({
   pending,
+  uploading = false,
   error,
   cancelHref,
   label = "Salva",
 }: {
   pending: boolean;
+  /** An image upload is still running: saving is blocked until it ends. */
+  uploading?: boolean;
   error?: string;
   cancelHref?: string;
   label?: string;
 }) {
   return (
     <div className="sticky bottom-0 -mx-4 flex flex-wrap items-center gap-3 border-t border-border bg-bg/95 px-4 py-4 backdrop-blur sm:-mx-6 sm:px-6">
-      <button type="submit" disabled={pending} className={primaryBtn}>
-        {pending && <Loader2 size={18} className="animate-spin" />}
-        {pending ? "Salvataggio…" : label}
+      <button type="submit" disabled={pending || uploading} className={primaryBtn}>
+        {(pending || uploading) && <Loader2 size={18} className="animate-spin" />}
+        {pending ? "Salvataggio…" : uploading ? "Caricamento immagini…" : label}
       </button>
       {cancelHref && (
         <Link href={cancelHref} className={secondaryBtn}>

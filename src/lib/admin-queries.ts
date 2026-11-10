@@ -1,4 +1,5 @@
 import { asc, desc, eq, sql } from "drizzle-orm";
+import { connection } from "next/server";
 import { db } from "@/db";
 import {
   events,
@@ -12,6 +13,8 @@ import { parseManualSlots } from "./home";
 import { DEFAULT_THEME, type SiteTheme } from "./theme";
 
 // Admin reads are intentionally uncached: the artist must always see fresh data.
+// Every read awaits `connection()` first so admin pages are rendered per request and never
+// prerendered (or failed) at build time.
 
 export type PickerItem = {
   type: "painting" | "event";
@@ -22,6 +25,7 @@ export type PickerItem = {
 };
 
 export async function listPaintingsAdmin() {
+  await connection();
   return db
     .select({
       id: paintings.id,
@@ -37,6 +41,7 @@ export async function listPaintingsAdmin() {
 }
 
 export async function listEventsAdmin() {
+  await connection();
   return db
     .select({
       id: events.id,
@@ -67,6 +72,7 @@ export const listPaintingOptions = (): Promise<PaintingOption[]> =>
     .orderBy(asc(paintings.title));
 
 export async function getPaintingForEdit(id: number) {
+  await connection();
   const [painting] = await db.select().from(paintings).where(eq(paintings.id, id));
   if (!painting) return null;
   const links = await db.select().from(paintingsToEvents).where(eq(paintingsToEvents.paintingId, id));
@@ -74,16 +80,20 @@ export async function getPaintingForEdit(id: number) {
 }
 
 export async function getEventForEdit(id: number) {
+  await connection();
   const [event] = await db.select().from(events).where(eq(events.id, id));
   if (!event) return null;
   const links = await db.select().from(paintingsToEvents).where(eq(paintingsToEvents.eventId, id));
   return { event, paintingIds: links.map((l) => l.paintingId) };
 }
 
-export const getProfileAdmin = async () =>
-  (await db.select().from(profileSettings).where(eq(profileSettings.id, 1)))[0] ?? null;
+export const getProfileAdmin = async () => {
+  await connection();
+  return (await db.select().from(profileSettings).where(eq(profileSettings.id, 1)))[0] ?? null;
+};
 
 export async function getThemeAdmin(): Promise<SiteTheme> {
+  await connection();
   try {
     const [row] = await db.select().from(siteSettings).where(eq(siteSettings.id, 1));
     return row ? { wall: row.wallPreset, accent: row.accentColor } : DEFAULT_THEME;
@@ -93,6 +103,7 @@ export async function getThemeAdmin(): Promise<SiteTheme> {
 }
 
 export async function getHomeAdminData() {
+  await connection();
   const [[settings], pRows, eRows] = await Promise.all([
     db.select().from(homeSettings).where(eq(homeSettings.id, 1)),
     db.select().from(paintings).orderBy(desc(paintings.date)),

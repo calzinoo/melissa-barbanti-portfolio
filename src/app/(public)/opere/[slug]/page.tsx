@@ -11,9 +11,15 @@ export async function generateMetadata({ params }: PageProps<"/opere/[slug]">): 
   const { slug } = await params;
   const data = await getPaintingBySlug(slug);
   if (!data) return { title: "Opera non trovata — Melissa Barbanti" };
+  const { title, description, mainImageUrl, slug: s } = data.painting;
+  const summary = description.replace(/\s+/g, " ").slice(0, 160);
+  const images = [{ url: mainImageUrl, alt: title }];
   return {
-    title: `${data.painting.title} — Melissa Barbanti`,
-    description: data.painting.description.slice(0, 160),
+    title: `${title} — Melissa Barbanti`,
+    description: summary,
+    alternates: { canonical: `/opere/${s}` },
+    openGraph: { title, description: summary, type: "article", url: `/opere/${s}`, images },
+    twitter: { card: "summary_large_image", title, description: summary, images: [mainImageUrl] },
   };
 }
 

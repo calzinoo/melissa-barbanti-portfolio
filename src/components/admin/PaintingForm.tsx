@@ -12,6 +12,7 @@ import type { EventOption } from "@/lib/admin-queries";
 import { formatDate } from "@/lib/format";
 import { Field, FormActions, cardCls, inputCls, textareaCls } from "./FormUi";
 import ImageUploader from "./ImageUploader";
+import { useUploadTracker } from "./useUploadTracker";
 import PaintingPreview from "./PaintingPreview";
 
 export type PaintingFormValues = {
@@ -34,11 +35,13 @@ export default function PaintingForm({ id, initial, events }: Props) {
   const [v, setV] = useState(initial);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [pending, start] = useTransition();
+  const { uploading, onBusyChange } = useUploadTracker();
   const set = <K extends keyof PaintingFormValues>(k: K, val: PaintingFormValues[K]) =>
     setV((s) => ({ ...s, [k]: val }));
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (uploading) return;
     start(async () => {
       let res: ActionResult;
       try {
@@ -61,6 +64,7 @@ export default function PaintingForm({ id, initial, events }: Props) {
       <div className="space-y-6">
         <div className={cardCls}>
           <ImageUploader
+            onBusyChange={onBusyChange}
             label="Immagine principale"
             value={v.mainImageUrl ? [v.mainImageUrl] : []}
             onChange={(u) => set("mainImageUrl", u[0] ?? "")}
@@ -72,6 +76,7 @@ export default function PaintingForm({ id, initial, events }: Props) {
           )}
           <div className="mt-6">
             <ImageUploader
+            onBusyChange={onBusyChange}
               multiple
               hideBadge
               label="Dettagli e cornice"
@@ -146,6 +151,7 @@ export default function PaintingForm({ id, initial, events }: Props) {
 
         <FormActions
           pending={pending}
+          uploading={uploading}
           error={errors._form}
           cancelHref="/admin/dipinti"
           label={id ? "Salva modifiche" : "Crea dipinto"}

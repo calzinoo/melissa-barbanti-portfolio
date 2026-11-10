@@ -13,9 +13,11 @@ type Props = {
   hint?: string;
   /** Hide the WebP badge when several uploaders share a section. */
   hideBadge?: boolean;
+  /** Fired true when uploads start and false when the queue is empty (use to block form submit). */
+  onBusyChange?: (busy: boolean) => void;
 };
 
-export default function ImageUploader({ value, onChange, multiple = false, label, hint, hideBadge }: Props) {
+export default function ImageUploader({ value, onChange, multiple = false, label, hint, hideBadge, onBusyChange }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -28,7 +30,10 @@ export default function ImageUploader({ value, onChange, multiple = false, label
     setError(null);
     const batch = multiple ? files : files.slice(0, 1);
     setBusy(batch.length);
+    onBusyChange?.(true);
     const uploaded: string[] = [];
+    // Strictly sequential: one POST /api/upload per file keeps each request under
+    // Vercel's 4.5 MB body limit and avoids parallel memory spikes.
     for (const file of batch) {
       try {
         uploaded.push(await uploadImage(file));
@@ -38,6 +43,7 @@ export default function ImageUploader({ value, onChange, multiple = false, label
         setBusy((n) => n - 1);
       }
     }
+    onBusyChange?.(false);
     if (uploaded.length) onChange(multiple ? [...value, ...uploaded] : [uploaded[0]]);
   }
 

@@ -1,60 +1,96 @@
-// Edge/Node-compatible admin session helpers (Web Crypto only).
+// Admin session helpers. Runs on the Node.js runtime (Server Actions, Route Handlers, proxy).
+import { createHash, createHmac, timingSafeEqual } from "node:crypto";
+
 export const SESSION_COOKIE = "admin_session";
 export const SESSION_TTL_SECONDS = 60 * 60 * 24 * 7;
 
-const DEFAULT_PASSWORD = "melissa-admin-2026";
+/** Insecure local-dev fallbacks. They must never be accepted in production. */
+export const DEV_PASSWORD = "melissa-admin-2026";
+const DEV_SECRET = "dev-only-insecure-secret";
+const MIN_SECRET_LENGTH = 16;
+
+/** Cookie attributes for the admin session. */
+export const sessionCookieOptions = () =>
+  ({
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: SESSION_TTL_SECONDS,
+  }) as const;
+
+type AuthConfig = { password: string; secret: string };
+
+let warned = false;
+
+/** Reasons the production configuration is unsafe (empty when fine or not in production). */
+export function securityProblems(env: NodeJS.ProcessEnv = process.env): string[] {
+  if (env.NODE_ENV !== "production") return [];
+  const problems: string[] = [];
+  if (!env.ADMIN_PASSWORD) problems.push("ADMIN_PASSWORD is missing");
+  else if (env.ADMIN_PASSWORD === DEV_PASSWORD) problems.push("ADMIN_PASSWORD is the insecure local fallback");
+  if (!env.AUTH_SECRET) problems.push("AUTH_SECRET is missing");
+  else if (env.AUTH_SECRET === DEV_SECRET || env.AUTH_SECRET.length < MIN_SECRET_LENGTH) {
+    problems.push(`AUTH_SECRET is insecure (use a random value of at least ${MIN_SECRET_LENGTH} chars)`);
+  }
+  return problems;
+}
 
 /**
- * The configured admin password. The dev default is only used outside production;
- * in production a missing ADMIN_PASSWORD disables login (and session verification)
- * instead of silently exposing a well-known password.
+ * Resolves credentials, failing CLOSED in production: with a missing/insecure configuration
+ * login and session verification are disabled and a clear error is logged. Not thrown at import
+ * time on purpose, so `next build` (NODE_ENV=production) cannot be broken by a missing env var.
  */
+function getAuthConfig(): AuthConfig | null {
+  const problems = securityProblems();
+  if (problems.length) {
+    if (!warned) {
+      warned = true;
+      console.error(`[SECURITY] Admin authentication DISABLED: ${problems.join("; ")}.`);
+    }
+    return null;
+  }
+  return {
+    password: process.env.ADMIN_PASSWORD || DEV_PASSWORD,
+    secret: process.env.AUTH_SECRET || DEV_SECRET,
+  };
+}
+
 export function getAdminPassword(): string | null {
-  if (process.env.ADMIN_PASSWORD) return process.env.ADMIN_PASSWORD;
-  return process.env.NODE_ENV === "production" ? null : DEFAULT_PASSWORD;
+  return getAuthConfig()?.password ?? null;
 }
 
-async function sign(payload: string, password: string): Promise<string> {
-  const secret = `${process.env.AUTH_SECRET ?? ""}:${password}`;
-  const enc = new TextEncoder();
-  const key = await crypto.subtle.importKey(
-    "raw",
-    enc.encode(secret),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"],
-  );
-  const sig = await crypto.subtle.sign("HMAC", key, enc.encode(payload));
-  return Array.from(new Uint8Array(sig), (b) => b.toString(16).padStart(2, "0")).join("");
+function sign(payload: string, { password, secret }: AuthConfig): string {
+  return createHmac("sha256", `${secret}:${password}`).update(payload).digest("hex");
 }
 
-function safeEqual(a: string, b: string): boolean {
-  if (a.length !== b.length) return false;
-  let diff = 0;
-  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  return diff === 0;
+/** Constant-time string comparison; hashing first hides length differences too. */
+export function safeEqual(a: string, b: string): boolean {
+  const ha = createHash("sha256").update(a).digest();
+  const hb = createHash("sha256").update(b).digest();
+  return timingSafeEqual(ha, hb);
 }
 
 export function checkPassword(input: string): boolean {
-  const password = getAdminPassword();
-  return password !== null && safeEqual(input, password);
+  const config = getAuthConfig();
+  return config !== null && safeEqual(input, config.password);
 }
 
-/** Creates a signed token `expiry.signature`; changing the password invalidates it. */
+/** Creates a signed token `expiry.signature`; changing the password or secret invalidates it. */
 export async function createSessionToken(): Promise<string> {
-  const password = getAdminPassword();
-  if (password === null) throw new Error("ADMIN_PASSWORD is not configured");
+  const config = getAuthConfig();
+  if (!config) throw new Error("Admin authentication is not configured");
   const exp = String(Math.floor(Date.now() / 1000) + SESSION_TTL_SECONDS);
-  return `${exp}.${await sign(exp, password)}`;
+  return `${exp}.${sign(exp, config)}`;
 }
 
 export async function verifySessionToken(token: string | undefined): Promise<boolean> {
-  const password = getAdminPassword();
-  if (!token || password === null) return false;
+  const config = getAuthConfig();
+  if (!token || !config) return false;
   const parts = token.split(".");
   if (parts.length !== 2) return false;
   const [exp, sig] = parts;
   const expiry = Number(exp);
   if (!exp || !sig || !Number.isFinite(expiry) || expiry < Date.now() / 1000) return false;
-  return safeEqual(sig, await sign(exp, password));
+  return safeEqual(sig, sign(exp, config));
 }

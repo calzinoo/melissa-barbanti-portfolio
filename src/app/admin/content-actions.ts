@@ -2,6 +2,7 @@
 
 import { db } from "@/db";
 import { requireAdmin } from "@/lib/admin-guard";
+import { deleteStoredFiles } from "@/lib/storage";
 import {
   createEvent,
   createPainting,
@@ -51,6 +52,7 @@ export async function updatePaintingAction(
   const res = await updatePainting(db, id, v.data);
   if (!res) return NOT_FOUND;
   revalidateContent(res.affected);
+  await deleteStoredFiles(res.affected.orphanedUrls ?? []);
   return { ok: true, id };
 }
 
@@ -59,6 +61,7 @@ export async function deletePaintingAction(id: number): Promise<ActionResult> {
   const affected = await deletePainting(db, id);
   if (!affected) return NOT_FOUND;
   revalidateContent(affected);
+  await deleteStoredFiles(affected.orphanedUrls ?? []);
   return { ok: true };
 }
 
@@ -81,6 +84,7 @@ export async function updateEventAction(
   const res = await updateEvent(db, id, v.data);
   if (!res) return NOT_FOUND;
   revalidateContent(res.affected);
+  await deleteStoredFiles(res.affected.orphanedUrls ?? []);
   return { ok: true, id };
 }
 
@@ -89,6 +93,7 @@ export async function deleteEventAction(id: number): Promise<ActionResult> {
   const affected = await deleteEvent(db, id);
   if (!affected) return NOT_FOUND;
   revalidateContent(affected);
+  await deleteStoredFiles(affected.orphanedUrls ?? []);
   return { ok: true };
 }
 
@@ -96,7 +101,7 @@ export async function saveHomeSettingsAction(
   raw: Partial<HomeSettingsInput>,
 ): Promise<ActionResult> {
   await requireAdmin();
-  const res = await saveHomeSettings(db, raw);
+  const res = await db.transaction((tx) => saveHomeSettings(tx, raw));
   if (!res.ok) return res;
   revalidateHome();
   return { ok: true };
@@ -112,8 +117,9 @@ export async function saveThemeAction(raw: Partial<SiteTheme>): Promise<ActionRe
 
 export async function saveProfileAction(raw: Partial<ProfileInput>): Promise<ActionResult> {
   await requireAdmin();
-  const res = await saveProfile(db, raw);
+  const res = await db.transaction((tx) => saveProfile(tx, raw));
   if (!res.ok) return res;
   revalidateProfile();
+  await deleteStoredFiles(res.data.orphanedUrls);
   return { ok: true };
 }

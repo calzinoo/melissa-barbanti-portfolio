@@ -7,6 +7,7 @@ import { createEventAction, updateEventAction, type ActionResult } from "@/app/a
 import type { PaintingOption } from "@/lib/admin-queries";
 import { Field, FormActions, cardCls, inputCls, textareaCls } from "./FormUi";
 import ImageUploader from "./ImageUploader";
+import { useUploadTracker } from "./useUploadTracker";
 
 export type EventFormValues = {
   title: string;
@@ -27,11 +28,13 @@ export default function EventForm({ id, initial, paintings }: Props) {
   const [v, setV] = useState(initial);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [pending, start] = useTransition();
+  const { uploading, onBusyChange } = useUploadTracker();
   const set = <K extends keyof EventFormValues>(k: K, val: EventFormValues[K]) =>
     setV((s) => ({ ...s, [k]: val }));
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (uploading) return;
     start(async () => {
       let res: ActionResult;
       try {
@@ -61,7 +64,7 @@ export default function EventForm({ id, initial, paintings }: Props) {
           <input id="startDate" type="date" className={inputCls} value={v.startDate} onChange={(e) => set("startDate", e.target.value)} />
         </Field>
         <Field label="Data di fine (facoltativa)" htmlFor="endDate" error={errors.endDate}>
-          <input id="endDate" type="date" className={inputCls} value={v.endDate} onChange={(e) => set("endDate", e.target.value)} />
+          <input id="endDate" type="date" min={v.startDate || undefined} className={inputCls} value={v.endDate} onChange={(e) => set("endDate", e.target.value)} />
         </Field>
         <div className="sm:col-span-2">
           <Field label="Sede e Città" htmlFor="location" hint="Es. Galleria Civica, Bologna">
@@ -86,12 +89,14 @@ export default function EventForm({ id, initial, paintings }: Props) {
 
       <div className={cardCls}>
         <ImageUploader
+            onBusyChange={onBusyChange}
           label="Immagine di copertina"
           value={v.coverImageUrl ? [v.coverImageUrl] : []}
           onChange={(u) => set("coverImageUrl", u[0] ?? "")}
         />
         <div className="mt-6">
           <ImageUploader
+            onBusyChange={onBusyChange}
             multiple
             hideBadge
             label="Foto dell'evento"
@@ -137,7 +142,8 @@ export default function EventForm({ id, initial, paintings }: Props) {
         )}
       </fieldset>
 
-      <FormActions pending={pending} error={errors._form} cancelHref="/admin/eventi" label={id ? "Salva modifiche" : "Crea evento"} />
+      <FormActions pending={pending}
+          uploading={uploading} error={errors._form} cancelHref="/admin/eventi" label={id ? "Salva modifiche" : "Crea evento"} />
     </form>
   );
 }
