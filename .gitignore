@@ -1,0 +1,12 @@
+node_modules/
+.next/
+out/
+dist/
+build/
+.env*
+!.env.example
+local.db*
+*.tsbuildinfo
+next-env.d.ts
+design-refs/
+public/uploads/
