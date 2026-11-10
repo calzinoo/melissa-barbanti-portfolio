@@ -90,3 +90,8 @@ body {
 .wall > * {
   z-index: 1;
 }
+
+/* Unlayered rules beat Tailwind's layered utilities, so the navbar's z-50 was overridden; keep it above <main>. */
+.wall > header {
+  z-index: 50;
+}
