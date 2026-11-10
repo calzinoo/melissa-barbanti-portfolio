@@ -10,6 +10,7 @@ import {
 } from "@/db/schema";
 import type { DbOrTx } from "@/db/types";
 import { parseJsonArray } from "./format";
+import { MAX_SLOTS } from "./home-constants";
 
 export type HeroItem = {
   type: ItemType;
@@ -27,7 +28,7 @@ export type HomeData = {
   mode: "auto" | "manual";
 };
 
-export const MAX_MANUAL_SLOTS = 7;
+export const MAX_MANUAL_SLOTS = MAX_SLOTS;
 const HOME_PAINTINGS = 6;
 const HOME_EVENTS = 3;
 
