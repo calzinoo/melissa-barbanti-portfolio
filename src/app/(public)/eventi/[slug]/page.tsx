@@ -6,7 +6,11 @@ import { CalendarDays, MapPin } from "lucide-react";
 import PaintingCard from "@/components/public/PaintingCard";
 import SmartEditorialLayout from "@/components/public/SmartEditorialLayout";
 import { formatDateRange, parseJsonArray } from "@/lib/format";
-import { getEventBySlug } from "@/lib/queries";
+import { getEventBySlug, getEventSlugs } from "@/lib/queries";
+
+export async function generateStaticParams() {
+  return getEventSlugs();
+}
 
 export async function generateMetadata({ params }: PageProps<"/eventi/[slug]">): Promise<Metadata> {
   const { slug } = await params;

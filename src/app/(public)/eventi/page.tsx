@@ -25,7 +25,7 @@ async function Timeline() {
     <div className="space-y-14">
       {[...byYear].map(([year, items]) => (
         <section key={year} aria-labelledby={`anno-${year}`} className="grid gap-6 md:grid-cols-[6rem_1fr]">
-          <h2 id={`anno-${year}`} className="font-serif text-4xl text-accent md:sticky md:top-24 md:self-start">
+          <h2 id={`anno-${year}`} className="font-serif text-4xl text-accent">
             {year}
           </h2>
           <div className="space-y-6 border-l border-border pl-6 md:pl-10">

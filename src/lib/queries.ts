@@ -112,6 +112,24 @@ export async function getPaintingBySlug(slug: string) {
   );
 }
 
+/**
+ * Slugs for `generateStaticParams`, so detail pages are prerendered (instant navigation) instead of
+ * rendered on demand. Cache Components requires at least one param at build time, so an empty or
+ * unreachable database yields a placeholder slug that resolves to a 404.
+ */
+async function slugParams(label: string, run: () => Promise<{ slug: string }[]>) {
+  try {
+    const rows = await run();
+    if (rows.length > 0) return rows;
+  } catch (e) {
+    console.error(`[queries] ${label} slugs failed:`, e instanceof Error ? e.message : e);
+  }
+  return [{ slug: "_" }];
+}
+
+export const getPaintingSlugs = () => slugParams("painting", () => db.select({ slug: paintings.slug }).from(paintings));
+export const getEventSlugs = () => slugParams("event", () => db.select({ slug: events.slug }).from(events));
+
 export async function getAllEvents() {
   "use cache";
   cacheTag("events");

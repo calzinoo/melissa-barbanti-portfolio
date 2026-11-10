@@ -5,7 +5,11 @@ import { notFound } from "next/navigation";
 import { CalendarDays, MapPin } from "lucide-react";
 import PaintingViewer from "@/components/public/PaintingViewer";
 import { formatDateRange, parseJsonArray, yearOf } from "@/lib/format";
-import { getPaintingBySlug } from "@/lib/queries";
+import { getPaintingBySlug, getPaintingSlugs } from "@/lib/queries";
+
+export async function generateStaticParams() {
+  return getPaintingSlugs();
+}
 
 export async function generateMetadata({ params }: PageProps<"/opere/[slug]">): Promise<Metadata> {
   const { slug } = await params;
@@ -38,7 +42,7 @@ async function PaintingContent({ params }: { params: PageProps<"/opere/[slug]">[
 
   return (
     <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
-      <div className="min-w-0 lg:sticky lg:top-24 lg:self-start">
+      <div className="min-w-0">
         <PaintingViewer
           title={p.title}
           mainImageUrl={p.mainImageUrl}
