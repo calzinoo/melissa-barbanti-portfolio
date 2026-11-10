@@ -1,0 +1,38 @@
+@import "tailwindcss";
+
+/* Public site: "Chiaroscuro Gallery" dark theme (default) */
+:root {
+  --bg: #141413;
+  --surface: #1e1d1b;
+  --border: #2e2c29;
+  --fg: #f4f1ea;
+  --muted: #a39e93;
+  --accent: #c5a059;
+}
+
+/* Admin: warm light theme, activated by wrapping the admin tree with data-theme="admin" */
+[data-theme="admin"] {
+  --bg: #f8f7f4;
+  --surface: #ffffff;
+  --border: #e5e0d8;
+  --fg: #141413;
+  --muted: #6b665c;
+  --accent: #c5a059;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-border: var(--border);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --font-serif: var(--font-cormorant);
+  --font-sans: var(--font-jakarta);
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-jakarta), system-ui, sans-serif;
+}
