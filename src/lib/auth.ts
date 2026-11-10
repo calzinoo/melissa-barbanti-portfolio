@@ -4,12 +4,18 @@ export const SESSION_TTL_SECONDS = 60 * 60 * 24 * 7;
 
 const DEFAULT_PASSWORD = "melissa-admin-2026";
 
-export function getAdminPassword(): string {
-  return process.env.ADMIN_PASSWORD || DEFAULT_PASSWORD;
+/**
+ * The configured admin password. The dev default is only used outside production;
+ * in production a missing ADMIN_PASSWORD disables login (and session verification)
+ * instead of silently exposing a well-known password.
+ */
+export function getAdminPassword(): string | null {
+  if (process.env.ADMIN_PASSWORD) return process.env.ADMIN_PASSWORD;
+  return process.env.NODE_ENV === "production" ? null : DEFAULT_PASSWORD;
 }
 
-async function sign(payload: string): Promise<string> {
-  const secret = `${process.env.AUTH_SECRET ?? ""}:${getAdminPassword()}`;
+async function sign(payload: string, password: string): Promise<string> {
+  const secret = `${process.env.AUTH_SECRET ?? ""}:${password}`;
   const enc = new TextEncoder();
   const key = await crypto.subtle.importKey(
     "raw",
@@ -30,18 +36,25 @@ function safeEqual(a: string, b: string): boolean {
 }
 
 export function checkPassword(input: string): boolean {
-  return safeEqual(input, getAdminPassword());
+  const password = getAdminPassword();
+  return password !== null && safeEqual(input, password);
 }
 
 /** Creates a signed token `expiry.signature`; changing the password invalidates it. */
 export async function createSessionToken(): Promise<string> {
+  const password = getAdminPassword();
+  if (password === null) throw new Error("ADMIN_PASSWORD is not configured");
   const exp = String(Math.floor(Date.now() / 1000) + SESSION_TTL_SECONDS);
-  return `${exp}.${await sign(exp)}`;
+  return `${exp}.${await sign(exp, password)}`;
 }
 
 export async function verifySessionToken(token: string | undefined): Promise<boolean> {
-  if (!token) return false;
-  const [exp, sig] = token.split(".");
-  if (!exp || !sig || Number(exp) < Date.now() / 1000) return false;
-  return safeEqual(sig, await sign(exp));
+  const password = getAdminPassword();
+  if (!token || password === null) return false;
+  const parts = token.split(".");
+  if (parts.length !== 2) return false;
+  const [exp, sig] = parts;
+  const expiry = Number(exp);
+  if (!exp || !sig || !Number.isFinite(expiry) || expiry < Date.now() / 1000) return false;
+  return safeEqual(sig, await sign(exp, password));
 }

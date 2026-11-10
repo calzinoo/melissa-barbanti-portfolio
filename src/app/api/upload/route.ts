@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { isAdminRequest } from "@/lib/admin-guard";
 import { saveImage } from "@/lib/storage";
 
 const MAX_BYTES = 8 * 1024 * 1024;
@@ -13,8 +14,12 @@ function isWebp(buf: Buffer): boolean {
 }
 
 export async function POST(request: Request) {
-  const form = await request.formData();
-  const file = form.get("file");
+  // Defense in depth: the proxy also checks, but the route must never trust it alone.
+  if (!(await isAdminRequest(request))) {
+    return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
+  }
+  const form = await request.formData().catch(() => null);
+  const file = form?.get("file");
   if (!(file instanceof File)) {
     return NextResponse.json({ error: "Nessun file ricevuto" }, { status: 400 });
   }

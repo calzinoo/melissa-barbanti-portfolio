@@ -1,8 +1,7 @@
+import { buildEditorialLayout } from "@/lib/editorial";
 import ImageMasonry from "./ImageMasonry";
 
 type Props = { text: string; images: string[]; alt?: string };
-
-const ZIGZAG_ROWS = 2;
 
 function Paragraph({ children }: { children: string }) {
   return <p className="whitespace-pre-line text-lg leading-[1.85] text-fg/90">{children}</p>;
@@ -14,16 +13,7 @@ function Paragraph({ children }: { children: string }) {
  * all other images land in a masonry grid with lightbox.
  */
 export default function SmartEditorialLayout({ text, images, alt = "Immagine" }: Props) {
-  const paragraphs = text
-    .replace(/\r\n/g, "\n")
-    .split("\n\n")
-    .map((p) => p.trim())
-    .filter(Boolean);
-  const photos = images.filter(Boolean);
-
-  const rows = paragraphs.slice(0, ZIGZAG_ROWS).map((p, i) => ({ text: p, image: photos[i] }));
-  const rest = paragraphs.slice(ZIGZAG_ROWS);
-  const gridImages = photos.slice(rows.filter((r) => r.image).length);
+  const { rows, rest, gridImages } = buildEditorialLayout(text, images);
 
   return (
     <div className="space-y-16 md:space-y-24">
