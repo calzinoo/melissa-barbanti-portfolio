@@ -1,16 +1,12 @@
 import { randomUUID } from "node:crypto";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 
 export type StoredFile = { url: string };
 
-const hasS3Config = () =>
-  Boolean(
-    process.env.S3_BUCKET &&
-      process.env.S3_ACCESS_KEY_ID &&
-      process.env.S3_SECRET_ACCESS_KEY &&
-      process.env.S3_PUBLIC_URL,
-  );
+const hasR2Config = () =>
+  Boolean(process.env.R2_BUCKET_NAME && process.env.R2_ACCOUNT_ID);
 
 function uniqueName(): string {
   return `${Date.now()}-${randomUUID().slice(0, 8)}.webp`;
@@ -23,34 +19,30 @@ async function saveLocal(buffer: Buffer, name: string): Promise<StoredFile> {
   return { url: `/uploads/${name}` };
 }
 
-/**
- * S3 / Cloudflare R2 adapter (S3-compatible), used when S3_* env vars are set.
- * Requires `@aws-sdk/client-s3`, to be installed when switching to production storage.
- */
-async function saveS3(buffer: Buffer, name: string): Promise<StoredFile> {
-  const moduleName = "@aws-sdk/client-s3";
-  const { S3Client, PutObjectCommand } = await import(/* webpackIgnore: true */ moduleName);
+/** Cloudflare R2 adapter (S3-compatible), used when R2_BUCKET_NAME and R2_ACCOUNT_ID are set. */
+async function saveR2(buffer: Buffer, name: string): Promise<StoredFile> {
   const client = new S3Client({
-    region: process.env.S3_REGION ?? "auto",
-    endpoint: process.env.S3_ENDPOINT,
+    region: "auto",
+    endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
     credentials: {
-      accessKeyId: process.env.S3_ACCESS_KEY_ID!,
-      secretAccessKey: process.env.S3_SECRET_ACCESS_KEY!,
+      accessKeyId: process.env.R2_ACCESS_KEY_ID ?? "",
+      secretAccessKey: process.env.R2_SECRET_ACCESS_KEY ?? "",
     },
   });
   await client.send(
     new PutObjectCommand({
-      Bucket: process.env.S3_BUCKET,
-      Key: `uploads/${name}`,
+      Bucket: process.env.R2_BUCKET_NAME,
+      Key: name,
       Body: buffer,
       ContentType: "image/webp",
       CacheControl: "public, max-age=31536000, immutable",
     }),
   );
-  return { url: `${process.env.S3_PUBLIC_URL!.replace(/\/$/, "")}/uploads/${name}` };
+  const base = (process.env.R2_PUBLIC_URL ?? "").replace(/\/$/, "");
+  return { url: `${base}/${name}` };
 }
 
 export async function saveImage(buffer: Buffer): Promise<StoredFile> {
   const name = uniqueName();
-  return hasS3Config() ? saveS3(buffer, name) : saveLocal(buffer, name);
+  return hasR2Config() ? saveR2(buffer, name) : saveLocal(buffer, name);
 }
