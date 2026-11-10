@@ -22,7 +22,7 @@ export default function PaintingCard({ painting }: { painting: Painting }) {
 
       <div className="p-4">
         <div className="flex items-baseline justify-between gap-3">
-          <h3 className="font-serif text-xl leading-tight text-fg">{title}</h3>
+          <h3 className="min-w-0 break-words font-serif text-xl leading-tight text-fg">{title}</h3>
           <span className="text-xs text-muted">{yearOf(date)}</span>
         </div>
 

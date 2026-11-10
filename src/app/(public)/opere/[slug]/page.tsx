@@ -38,7 +38,7 @@ async function PaintingContent({ params }: { params: PageProps<"/opere/[slug]">[
 
   return (
     <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
-      <div className="lg:sticky lg:top-24 lg:self-start">
+      <div className="min-w-0 lg:sticky lg:top-24 lg:self-start">
         <PaintingViewer
           title={p.title}
           mainImageUrl={p.mainImageUrl}
@@ -46,11 +46,11 @@ async function PaintingContent({ params }: { params: PageProps<"/opere/[slug]">[
         />
       </div>
 
-      <div>
+      <div className="min-w-0">
         <Link href="/opere" className="text-sm text-muted transition-colors hover:text-accent">
           ← Tutte le opere
         </Link>
-        <h1 className="mt-4 font-serif text-4xl leading-tight text-fg md:text-5xl">{p.title}</h1>
+        <h1 className="mt-4 break-words font-serif text-4xl leading-tight text-fg md:text-5xl">{p.title}</h1>
 
         <dl className="mt-6 flex flex-wrap gap-x-10 gap-y-4 border-y border-border py-5">
           {meta.map((m) => (

@@ -31,7 +31,7 @@ async function ProfileContent() {
           />
         )}
         <p className="mt-8 text-xs uppercase tracking-[0.25em] text-accent">L&apos;artista</p>
-        <h1 className="mt-3 font-serif text-4xl text-fg md:text-6xl">Melissa Barbanti</h1>
+        <h1 className="mt-3 break-words font-serif text-4xl text-fg md:text-6xl">Melissa Barbanti</h1>
       </header>
 
       {profile?.bioDescription && (
@@ -44,7 +44,7 @@ async function ProfileContent() {
         </div>
       )}
 
-      <section aria-labelledby="contatti" className="mx-auto mt-24 max-w-xl rounded-sm border border-border bg-surface p-8">
+      <section aria-labelledby="contatti" className="mx-auto mt-24 max-w-xl rounded-sm border border-border bg-surface p-6 sm:p-8">
         <h2 id="contatti" className="font-serif text-3xl text-fg">
           Contatti
         </h2>
@@ -66,15 +66,15 @@ async function ProfileContent() {
                 href={`mailto:${email}`}
                 className="flex items-center gap-3 text-fg transition-colors hover:text-accent"
               >
-                <Mail size={20} aria-hidden className="text-accent" />
-                {email}
+                <Mail size={20} aria-hidden className="shrink-0 text-accent" />
+                <span className="min-w-0 break-all">{email}</span>
               </a>
             </li>
           )}
         </ul>
       </section>
 
-      <p className="mx-auto mt-8 w-fit rounded-full border border-border px-5 py-2 text-xs text-muted">
+      <p className="mx-auto mt-8 w-fit max-w-full rounded-2xl border border-border px-5 py-2 text-center text-xs text-muted sm:rounded-full">
         © Melissa Barbanti. Tutti i diritti riservati.{" "}
         <Link href="/note-legali" className="text-accent underline-offset-4 hover:underline">
           Note legali

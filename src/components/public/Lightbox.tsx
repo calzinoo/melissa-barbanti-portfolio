@@ -50,7 +50,7 @@ export default function Lightbox({ images, alt, index, onClose, onChange }: Prop
       <img
         src={images[index]}
         alt={`${alt} (${index + 1} di ${count})`}
-        className="max-h-full max-w-full object-contain"
+        className="max-h-full max-w-full select-none object-contain"
         onClick={(e) => e.stopPropagation()}
       />
       <button type="button" aria-label="Chiudi" onClick={onClose} className={`${btn} right-4 top-4`}>

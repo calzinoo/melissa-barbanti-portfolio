@@ -11,23 +11,24 @@ export default function EventCard({ event }: { event: Event }) {
       href={`/eventi/${slug}`}
       className="group flex flex-col overflow-hidden rounded-sm border border-border bg-surface transition-colors hover:border-accent/60 focus-visible:border-accent sm:flex-row"
     >
-      <div className="bg-bg sm:w-2/5 sm:shrink-0">
+      {/* Fixed-ratio frame on mobile; on wider screens it stretches to the text height. The cover is cropped to fill it. */}
+      <div className="relative aspect-[16/10] bg-bg sm:aspect-auto sm:min-h-56 sm:w-2/5 sm:shrink-0">
         {coverImageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={coverImageUrl}
             alt={title}
             loading="lazy"
-            className="h-full max-h-72 w-full object-cover sm:max-h-none"
+            className="absolute inset-0 size-full object-cover"
           />
         ) : (
-          <div className="flex aspect-[4/3] h-full items-center justify-center font-serif text-4xl text-border sm:aspect-auto">
+          <div className="absolute inset-0 flex items-center justify-center font-serif text-4xl text-border">
             MB
           </div>
         )}
       </div>
 
-      <div className="flex flex-col justify-center gap-3 p-6">
+      <div className="flex min-w-0 flex-1 flex-col justify-center gap-3 p-5 sm:p-6">
         <span className="inline-flex w-fit items-center gap-2 rounded-full border border-accent/50 px-3 py-1 text-xs text-accent">
           <CalendarDays size={14} aria-hidden />
           {formatDateRange(startDate, endDate)}
@@ -38,7 +39,7 @@ export default function EventCard({ event }: { event: Event }) {
             {location}
           </p>
         )}
-        <h3 className="font-serif text-2xl leading-tight text-fg transition-colors group-hover:text-accent">
+        <h3 className="break-words font-serif text-2xl leading-tight text-fg transition-colors group-hover:text-accent">
           {title}
         </h3>
         <p className="line-clamp-3 text-sm leading-relaxed text-muted">{summary}</p>

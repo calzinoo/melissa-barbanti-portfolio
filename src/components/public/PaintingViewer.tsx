@@ -30,7 +30,7 @@ export default function PaintingViewer({
         <img
           src={images[current]}
           alt={current === 0 ? title : `${title} — dettaglio ${current}`}
-          className="mx-auto block h-auto max-h-[80vh] w-full object-contain"
+          className="mx-auto block h-auto max-h-[70vh] lg:max-h-[calc(100vh-14rem)] w-full object-contain"
         />
         <span className="absolute bottom-3 right-3 rounded-full bg-black/60 p-2 text-fg opacity-80 transition-opacity group-hover:opacity-100">
           <ZoomIn size={18} aria-hidden />

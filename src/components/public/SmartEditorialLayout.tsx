@@ -4,7 +4,7 @@ import ImageMasonry from "./ImageMasonry";
 type Props = { text: string; images: string[]; alt?: string };
 
 function Paragraph({ children }: { children: string }) {
-  return <p className="whitespace-pre-line text-lg leading-[1.85] text-fg/90">{children}</p>;
+  return <p className="whitespace-pre-line break-words text-base leading-[1.85] text-fg/90 sm:text-lg">{children}</p>;
 }
 
 /**

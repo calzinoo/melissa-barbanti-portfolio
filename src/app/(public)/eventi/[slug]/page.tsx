@@ -35,7 +35,7 @@ async function EventContent({ params }: { params: PageProps<"/eventi/[slug]">["p
         <Link href="/eventi" className="text-sm text-muted transition-colors hover:text-accent">
           ← Tutte le mostre
         </Link>
-        <h1 className="mt-6 font-serif text-4xl leading-tight text-fg md:text-6xl">{e.title}</h1>
+        <h1 className="mt-6 break-words font-serif text-4xl leading-tight text-fg md:text-6xl">{e.title}</h1>
         <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted">
           <span className="inline-flex items-center gap-2 text-accent">
             <CalendarDays size={16} aria-hidden />
