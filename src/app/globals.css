@@ -83,12 +83,13 @@ body {
   left: 0;
   width: 100%;
   /* Large viewport height: stays constant when the mobile address bar collapses, so the background never rescales. */
-  height: 100vh;
-  height: 100lvh;
+  /* Texture layer is 160% tall and slides up by the extra 60% as the page scrolls (--wall-progress, 0..1, set by WallParallax). */
+  height: 160vh;
+  height: 160lvh;
   z-index: 0;
   pointer-events: none;
   will-change: transform;
-  transform: translateZ(0);
+  transform: translate3d(0, calc(var(--wall-progress, 0) * -37.5%), 0);
   opacity: var(--wall-grain, 0);
 }
 
@@ -110,6 +111,9 @@ body {
   inset: 0;
   width: auto;
   height: auto;
+}
+.wall-contained::after {
+  transform: none;
 }
 .wall-contained > * {
   position: relative;

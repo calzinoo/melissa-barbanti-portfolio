@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import Footer from "@/components/public/Footer";
 import Navbar from "@/components/public/Navbar";
+import WallParallax from "@/components/public/WallParallax";
 import { getSiteTheme } from "@/lib/queries";
 import { themeVars, wallTexture } from "@/lib/theme";
 
@@ -13,6 +14,7 @@ export default async function PublicLayout({ children }: LayoutProps<"/">) {
       data-texture={wallTexture(theme)}
       style={themeVars(theme) as React.CSSProperties}
     >
+      <WallParallax />
       <Suspense fallback={<div className="h-16 border-b border-border" />}>
         <Navbar />
       </Suspense>
