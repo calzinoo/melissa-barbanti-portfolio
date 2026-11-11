@@ -48,12 +48,20 @@ body {
   color: var(--fg);
 }
 
+/* Isolate the wall so the fixed layers' blend modes don't force full-page repaints while scrolling. */
+.wall {
+  isolation: isolate;
+}
+
 .wall::before {
   content: "";
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
+  /* Own compositor layer: the background stays put instead of repainting on every scroll frame. */
+  will-change: transform;
+  transform: translateZ(0);
   background-image:
     radial-gradient(
       ellipse 90% 55% at 50% -5%,
@@ -69,6 +77,8 @@ body {
   inset: 0;
   z-index: 0;
   pointer-events: none;
+  will-change: transform;
+  transform: translateZ(0);
   opacity: var(--wall-grain, 0);
 }
 
