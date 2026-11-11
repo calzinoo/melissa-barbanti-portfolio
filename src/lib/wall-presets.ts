@@ -1,5 +1,7 @@
 /** Gallery wall presets: colors + surface texture. Pure data. */
 
+import { FANTASY_WALLS, LEGACY_WALL_IDS } from "./wall-fantasy";
+
 export const DEFAULT_WALL = "chiaroscuro";
 
 export type WallPreset = {
@@ -18,6 +20,12 @@ export type WallPreset = {
   texture: WallTexture;
   /** Opacity (0–1) of the texture layer. */
   grain: number;
+  /** Hue rotation (deg) applied to the texture so its splashes match the wall color. */
+  hue?: number;
+  /** Saturation multiplier of the texture (1 = as painted, ~0.1 = neutral). */
+  sat?: number;
+  /** Color variant key shared across patterns (e.g. "rosso"). */
+  colorKey?: string;
 };
 
 export type WallTexture =
@@ -28,10 +36,20 @@ export type WallTexture =
   | "cracked"
   | "cracked-light"
   | "concrete"
-  | "peeling";
+  | "peeling"
+  | "splash-pour"
+  | "splash-petals"
+  | "splash-marble"
+  | "splash-veins"
+  | "splash-splatter"
+  | "splash-brush"
+  | "splash-cells"
+  | "splash-watercolor"
+  | "splash-materia"
+  | "splash-cosmo";
 
 
-export const WALL_PRESETS: WallPreset[] = [
+const BASE_WALLS: WallPreset[] = [
   {
     id: "chiaroscuro",
     label: "Chiaroscuro",
@@ -201,4 +219,35 @@ export const WALL_PRESETS: WallPreset[] = [
     texture: "peeling",
     grain: 1,
   },
+  {
+    id: "affioramenti",
+    label: "Affioramenti",
+    description: "Grigio ardesia e carbone, con la materia che emerge in superficie.",
+    bg: "#25282c",
+    surface: "#30343a",
+    border: "#454a52",
+    fg: "#eef0f1",
+    muted: "#b0b6bc",
+    glow: 0.1,
+    texture: "concrete",
+    grain: 0.35,
+  },
+  {
+    id: "verde-acqua-galleria",
+    label: "Verde acqua",
+    description: "Salvia e verde acqua chiaro, le pareti delle sale dove espone.",
+    bg: "#d5e2dc",
+    surface: "#e8f0ec",
+    border: "#b7cbc2",
+    fg: "#17221e",
+    muted: "#4c5f57",
+    glow: 0.5,
+    texture: "plaster",
+    grain: 0.07,
+  },
 ];
+
+export const WALL_PRESETS: WallPreset[] = [...BASE_WALLS, ...FANTASY_WALLS];
+
+/** Maps a stored id (possibly a retired one) to a current preset id. */
+export const resolveWallId = (id: string | null | undefined): string => LEGACY_WALL_IDS[id ?? ""] ?? id ?? DEFAULT_WALL;

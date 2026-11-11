@@ -54,7 +54,8 @@ describe("wall presets", () => {
   it("has unique ids and a stylesheet rule for every texture", () => {
     const ids = WALL_PRESETS.map((w) => w.id);
     expect(new Set(ids).size).toBe(ids.length);
-    const css = readFileSync("src/app/wall-textures.css", "utf8");
+    const css =
+      readFileSync("src/app/wall-textures.css", "utf8") + readFileSync("src/app/wall-splashes.css", "utf8");
     for (const w of WALL_PRESETS) {
       if (w.texture !== "none") expect(css).toContain(`[data-texture="${w.texture}"]`);
     }

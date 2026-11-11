@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "./wall-textures.css";
+@import "./wall-splashes.css";
 
 /* Public site: "Chiaroscuro Gallery" dark theme (default) */
 :root {
@@ -69,6 +70,11 @@ body {
   z-index: 0;
   pointer-events: none;
   opacity: var(--wall-grain, 0);
+}
+
+/* Fantasia walls: recolor the baked red/gold paint to match the chosen wall (hue + saturation). */
+.wall[data-texture^="splash-"]::after {
+  filter: hue-rotate(var(--wall-hue, 0deg)) saturate(var(--wall-sat, 1));
 }
 
 /* The texture image itself comes from wall-textures.css, keyed by data-texture. */

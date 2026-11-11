@@ -7,12 +7,11 @@ import {
   ACCENT_SWATCHES,
   DEFAULT_ACCENT,
   DEFAULT_THEME,
-  WALL_PRESETS,
   normalizeHex,
-  themeVars,
   type SiteTheme,
 } from "@/lib/theme";
 import { Field, FormActions, cardCls, inputCls, secondaryBtn } from "./FormUi";
+import WallPicker from "./WallPicker";
 import ThemePreview from "./ThemePreview";
 
 export default function ThemeForm({ initial }: { initial: SiteTheme }) {
@@ -60,45 +59,9 @@ export default function ThemeForm({ initial }: { initial: SiteTheme }) {
           <legend className="sr-only">Sfondo del sito</legend>
           <h2 className="font-serif text-2xl font-semibold">Parete della galleria</h2>
           <p className="mb-5 mt-1 text-sm text-muted">
-            Scegli il muro su cui “appendere” le tue opere.
+            Scegli il muro su cui “appendere” le tue opere: prima il motivo, poi il colore.
           </p>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {WALL_PRESETS.map((w) => {
-              const on = theme.wall === w.id;
-              return (
-                <label
-                  key={w.id}
-                  className={`flex cursor-pointer gap-3 rounded-xl border p-3 transition ${
-                    on ? "border-accent ring-2 ring-accent/40" : "border-border hover:border-accent/60"
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="wall"
-                    value={w.id}
-                    checked={on}
-                    onChange={() => update({ wall: w.id })}
-                    className="sr-only"
-                  />
-                  <span
-                    aria-hidden
-                    data-texture={w.texture}
-                    className="wall wall-contained h-16 w-20 shrink-0 rounded-lg border border-black/10"
-                    style={themeVars({ wall: w.id, accent: null }) as React.CSSProperties}
-                  />
-                  <span>
-                    <span className="block text-[15px] font-medium">
-                      {w.label}
-                      {w.id === "chiaroscuro" && (
-                        <span className="ml-2 text-xs font-normal text-muted">(attuale)</span>
-                      )}
-                    </span>
-                    <span className="block text-xs leading-snug text-muted">{w.description}</span>
-                  </span>
-                </label>
-              );
-            })}
-          </div>
+          <WallPicker key={theme.wall} value={theme.wall} onChange={(wall) => update({ wall })} />
         </fieldset>
 
         <fieldset className={cardCls}>

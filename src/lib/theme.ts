@@ -1,6 +1,7 @@
 /** Public-site theming: gallery "wall" presets + a customizable main (accent) color. Pure, no I/O. */
 
-import { DEFAULT_WALL, WALL_PRESETS, type WallPreset, type WallTexture } from "./wall-presets";
+import { WALL_PRESETS, resolveWallId, type WallPreset, type WallTexture } from "./wall-presets";
+import { DEFAULT_WALL } from "./wall-presets";
 
 export { WALL_PRESETS, type WallPreset, type WallTexture };
 export const DEFAULT_ACCENT = "#c5a059";
@@ -21,7 +22,7 @@ export const DEFAULT_THEME: SiteTheme = { wall: DEFAULT_WALL, accent: null };
 export const wallTexture = (theme: SiteTheme): WallTexture => getWall(theme.wall).texture;
 
 export function getWall(id: string | null | undefined): WallPreset {
-  return WALL_PRESETS.find((w) => w.id === id) ?? WALL_PRESETS[0];
+  return WALL_PRESETS.find((w) => w.id === resolveWallId(id)) ?? WALL_PRESETS[0];
 }
 
 export function normalizeHex(input: string | null | undefined): string | null {
@@ -78,14 +79,17 @@ export function themeVars(theme: SiteTheme): Record<string, string> {
     "--accent": readableAccent(base, wall.bg, wall.fg),
     "--wall-glow": String(wall.glow),
     "--wall-grain": String(wall.grain),
+    "--wall-hue": `${wall.hue ?? 0}deg`,
+    "--wall-sat": String(wall.sat ?? 1),
   };
 }
 
 export function sanitizeTheme(raw: Partial<SiteTheme>): { ok: true; data: SiteTheme } | { ok: false; errors: Record<string, string> } {
   const errors: Record<string, string> = {};
-  if (!WALL_PRESETS.some((w) => w.id === raw.wall)) errors.wall = "Sfondo non valido";
+  const wallId = resolveWallId(raw.wall);
+  if (!WALL_PRESETS.some((w) => w.id === wallId)) errors.wall = "Sfondo non valido";
   const accent = raw.accent?.trim() ? normalizeHex(raw.accent) : null;
   if (raw.accent?.trim() && !accent) errors.accent = "Colore non valido (es. #C5A059)";
   if (Object.keys(errors).length) return { ok: false, errors };
-  return { ok: true, data: { wall: raw.wall as string, accent } };
+  return { ok: true, data: { wall: wallId, accent } };
 }
