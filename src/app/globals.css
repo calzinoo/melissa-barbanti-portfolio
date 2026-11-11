@@ -56,7 +56,12 @@ body {
 .wall::before {
   content: "";
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100%;
+  /* Large viewport height: stays constant when the mobile address bar collapses, so the background never rescales. */
+  height: 100vh;
+  height: 100lvh;
   z-index: 0;
   pointer-events: none;
   /* Own compositor layer: the background stays put instead of repainting on every scroll frame. */
@@ -74,7 +79,12 @@ body {
 .wall::after {
   content: "";
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100%;
+  /* Large viewport height: stays constant when the mobile address bar collapses, so the background never rescales. */
+  height: 100vh;
+  height: 100lvh;
   z-index: 0;
   pointer-events: none;
   will-change: transform;
@@ -97,6 +107,9 @@ body {
 .wall-contained::before,
 .wall-contained::after {
   position: absolute;
+  inset: 0;
+  width: auto;
+  height: auto;
 }
 .wall-contained > * {
   position: relative;
