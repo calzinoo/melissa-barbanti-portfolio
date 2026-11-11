@@ -13,8 +13,8 @@ const away = (r, cx0, cy0, sx = 500, sy = 420) => {
 /** Dense mass of overlapping black, white, grey and coral cells laced with gold, under a golden arc. */
 export function materia({ seed }) {
   const r = rng(seed);
-  const dark = ["#14120f", "#2a2420", "#4a2f27"], light = ["#f5f2ea", "#d9d5cc", "#b7b2a8"];
-  const hot = ["#e2472a", "#f0805a", "#eaa896"], gold = "#c9a24a";
+  const dark = ["#14120f", "#2a2420", "#4a2f27"], light = ["#8a8478", "#6e695f", "#5a554c"];
+  const hot = ["#e2472a", "#f0805a", "#c4604a"], gold = "#c9a24a";
   let wash = "", body = "", ribbons = "", top = "";
   for (const [cx, cy] of pickCorners(r)) {
     // golden halo: thick dry-brush arc made of parallel strokes
@@ -49,7 +49,7 @@ export function materia({ seed }) {
 /** Glowing blue orbs with a copper rim, white impasto highlights and copper dabs. */
 export function cosmo({ seed }) {
   const r = rng(seed);
-  const blues = ["#0a2a6b", "#1456b0", "#2a86d6", "#0b1c48"], pale = ["#eaf3fb", "#9cc7ec", "#ffffff"];
+  const blues = ["#0a2a6b", "#1456b0", "#1f68ae", "#0b1c48"], pale = ["#6ea2d2", "#4d88c2", "#86b2dc"];
   const copper = ["#d0662a", "#e8964a", "#8f3f1b"];
   let wash = "", body = "", ribbons = "", top = "", n = 0;
   for (const [cx, cy] of pickCorners(r)) {

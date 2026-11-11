@@ -43,7 +43,7 @@ export function splatter({ seed, blobs, pale, specks }) {
 export function brush({ seed }) {
   const r = rng(seed);
   const dark = ["#080d18", "#101c30", "#1a2f4d"], mid = ["#25496b", "#2f6a82", "#3d5a78"];
-  const pale = ["#e8eef0", "#aebfcc", "#f5efe4"], copper = ["#c8672a", "#e39a45", "#8f3f1b"];
+  const pale = ["#7a92a6", "#5c7890", "#8c9ba2"], copper = ["#c8672a", "#e39a45", "#8f3f1b"];
   const centers = pickCorners(r).map(([cx, cy]) => away(r, cx, cy, 300, 260));
   const noisePh = [r() * 6.28, r() * 6.28, r() * 6.28];
   // vector field: swirl around the cluster centers plus a slow wobble
